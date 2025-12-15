@@ -2,9 +2,11 @@ package hrhera.ali.backgroundsync.util
 
 import android.content.Context
 import com.google.gson.Gson
+import hrhera.ali.backgroundsync.domain.models.ItemFileInfo
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 
 
 object FileSeparatorUtil {
@@ -19,8 +21,8 @@ object FileSeparatorUtil {
         val inputFile = File(inputFilePath)
         require(inputFile.exists()){ "Input file does not exist" }
         require(chunkSize > 0) { "chunkSize must be greater than zero" }
-        print("size ->>>>>> ${inputFile.length()}")
         require(inputFile.length()>0){ "Input file is empty" }
+        require(itemId.isNotBlank()){ "itemId must not be blank" }
         val itemCacheDir = File(context.cacheDir, itemId)
         val jsonFile = File(itemCacheDir, "info.json")
         val result: ItemFileInfo? =
@@ -51,11 +53,11 @@ object FileSeparatorUtil {
             throw Exception("Empty or corrupted file")
         }
         val newItemInfo = ItemFileInfo(
-            itemName = itemId,
+            itemId = itemId,
             folderName = itemCacheDir.name,
             parts = partsMap,
-            orignalFilePath = inputFile.absolutePath,
-            chankSizeInMb = chunkSize
+            originalFilePath = inputFile.absolutePath,
+            chunkSizeInMb = chunkSize
         )
         jsonFile.writeText(Gson().toJson(newItemInfo))
 
@@ -75,7 +77,7 @@ object FileSeparatorUtil {
             } else {
                 getOldInfo(
                     jsonFile = jsonFile,
-                    orignalFile = inputFile,
+                    originalFile = inputFile,
                     chunkSize = chunkSize,
                     itemCacheDir = itemCacheDir
                 )
@@ -90,7 +92,7 @@ object FileSeparatorUtil {
         return (chunkSizeInMb * 1024 * 1024).toLong()
     }
 
-    private fun getOldInfo(jsonFile: File, orignalFile: File, chunkSize: Int, itemCacheDir: File):
+    private fun getOldInfo(jsonFile: File, originalFile: File, chunkSize: Int, itemCacheDir: File):
             ItemFileInfo? {
 
         if (jsonFile.exists()) {
@@ -103,8 +105,8 @@ object FileSeparatorUtil {
             }
 
             if (itemInfo == null ||
-                orignalFile.absolutePath != itemInfo.orignalFilePath ||
-                itemInfo.chankSizeInMb != chunkSize
+                originalFile.absolutePath != itemInfo.originalFilePath ||
+                itemInfo.chunkSizeInMb != chunkSize
             ) {
                 itemCacheDir.deleteRecursively()
                 return null
@@ -123,5 +125,29 @@ object FileSeparatorUtil {
             return null
         }
     }
+
+
+
+    fun createDummyFile(context: Context, fileName: String = "dummyFile.bin"): File {
+        val file = File(context.cacheDir, fileName)
+        val sizeInBytes = 50L * 1024 * 1024
+
+        try {
+            FileOutputStream(file).use { fos ->
+                val buffer = ByteArray(1024 * 1024) // 1 ميجابايت buffer
+                var written = 0L
+                while (written < sizeInBytes) {
+                    val bytesToWrite = if (sizeInBytes - written >= buffer.size) buffer.size else (sizeInBytes - written).toInt()
+                    fos.write(buffer, 0, bytesToWrite)
+                    written += bytesToWrite
+                }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return file
+    }
+
 }
 

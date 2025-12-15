@@ -79,7 +79,7 @@ class FileSeparatorUtilTest {
 
         // THEN
         assertEquals(3, result.parts.size)
-        assertEquals(inputFile.absolutePath, result.orignalFilePath)
+        assertEquals(inputFile.absolutePath, result.originalFilePath)
     }
 
 
@@ -244,6 +244,15 @@ class FileSeparatorUtilTest {
             context,
             inputFilePath = inputFile.absolutePath,
             "zeroChunk",
+            0
+        )
+    }
+    @Test(expected = IllegalArgumentException::class)
+    fun `GIVEN emptyPath WHEN split THEN throw exception`() {
+        FileSeparatorUtil.splitFileToChach(
+            context,
+            inputFilePath = inputFile.absolutePath,
+            "      ",
             0
         )
     }
