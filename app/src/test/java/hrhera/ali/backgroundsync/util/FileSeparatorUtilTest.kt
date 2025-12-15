@@ -11,7 +11,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.io.File
 import java.io.FileOutputStream
-import java.lang.Exception
 
 
 @RunWith(RobolectricTestRunner::class)
@@ -42,7 +41,7 @@ class FileSeparatorUtilTest {
         // WHEN
         val result = FileSeparatorUtil.splitFileToChach(
             context = context,
-            inputFile = inputFile,
+            inputFilePath = inputFile.absolutePath,
             itemId = itemId,
             chunkSize = chunkSizeMb
         )
@@ -64,7 +63,7 @@ class FileSeparatorUtilTest {
 
         FileSeparatorUtil.splitFileToChach(
             context,
-            inputFile,
+            inputFilePath = inputFile.absolutePath,
             itemId,
             chunkSizeMb
         )
@@ -72,7 +71,8 @@ class FileSeparatorUtilTest {
         // WHEN
         val result = FileSeparatorUtil.splitFileToChach(
             context,
-            inputFile,
+            inputFilePath = inputFile.absolutePath,
+
             itemId,
             chunkSizeMb
         )
@@ -90,7 +90,7 @@ class FileSeparatorUtilTest {
 
         FileSeparatorUtil.splitFileToChach(
             context,
-            inputFile,
+            inputFilePath = inputFile.absolutePath,
             itemId,
             1
         )
@@ -98,7 +98,7 @@ class FileSeparatorUtilTest {
         // WHEN
         val result = FileSeparatorUtil.splitFileToChach(
             context,
-            inputFile,
+            inputFilePath = inputFile.absolutePath,
             itemId,
             2
         )
@@ -115,7 +115,7 @@ class FileSeparatorUtilTest {
 
         val oldResult = FileSeparatorUtil.splitFileToChach(
             context,
-            inputFile,
+            inputFilePath = inputFile.absolutePath,
             itemId,
             chunkSizeMb
         )
@@ -125,7 +125,7 @@ class FileSeparatorUtilTest {
         // WHEN
         val newResult = FileSeparatorUtil.splitFileToChach(
             context,
-            inputFile,
+            inputFilePath = inputFile.absolutePath,
             itemId,
             chunkSizeMb
         )
@@ -144,7 +144,7 @@ class FileSeparatorUtilTest {
         // WHEN
         val result = FileSeparatorUtil.splitFileToChach(
             context,
-            smallFile,
+            inputFilePath = inputFile.absolutePath,
             "smallItem",
             5
         )
@@ -163,7 +163,7 @@ class FileSeparatorUtilTest {
         // WHEN
         val result = FileSeparatorUtil.splitFileToChach(
             context,
-            exactFile,
+            inputFilePath = exactFile.absolutePath,
             "exactItem",
             2
         )
@@ -176,7 +176,7 @@ class FileSeparatorUtilTest {
         )
     }
 
-    @Test(expected = Exception::class)
+    @Test(expected = IllegalArgumentException::class)
     fun `GIVEN empty file WHEN split THEN no parts created`() {
         // GIVEN
         val emptyFile = File(context.cacheDir, "empty.txt")
@@ -184,7 +184,7 @@ class FileSeparatorUtilTest {
 
        FileSeparatorUtil.splitFileToChach(
             context,
-            emptyFile,
+           inputFilePath = emptyFile.absolutePath,
             "emptyItem",
             1
         )
@@ -203,7 +203,7 @@ class FileSeparatorUtilTest {
         // WHEN
         val result = FileSeparatorUtil.splitFileToChach(
             context,
-            inputFile,
+            inputFilePath = inputFile.absolutePath,
             itemId,
             1
         )
@@ -221,7 +221,7 @@ class FileSeparatorUtilTest {
 
         FileSeparatorUtil.splitFileToChach(
             context,
-            otherFile,
+            otherFile.absolutePath,
             "sameItem",
             1
         )
@@ -229,7 +229,7 @@ class FileSeparatorUtilTest {
         // WHEN
         val result = FileSeparatorUtil.splitFileToChach(
             context,
-            inputFile,
+            inputFilePath = inputFile.absolutePath,
             "sameItem",
             1
         )
@@ -242,7 +242,7 @@ class FileSeparatorUtilTest {
     fun `GIVEN chunk size zero WHEN split THEN throw exception`() {
         FileSeparatorUtil.splitFileToChach(
             context,
-            inputFile,
+            inputFilePath = inputFile.absolutePath,
             "zeroChunk",
             0
         )

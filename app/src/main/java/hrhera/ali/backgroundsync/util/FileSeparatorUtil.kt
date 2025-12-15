@@ -12,11 +12,15 @@ object FileSeparatorUtil {
 
     fun splitFileToChach(
         context: Context,
-        inputFile: File,
+        inputFilePath: String,
         itemId: String,
         chunkSize: Int
     ): ItemFileInfo {
+        val inputFile = File(inputFilePath)
+        require(inputFile.exists()){ "Input file does not exist" }
         require(chunkSize > 0) { "chunkSize must be greater than zero" }
+        print("size ->>>>>> ${inputFile.length()}")
+        require(inputFile.length()>0){ "Input file is empty" }
         val itemCacheDir = File(context.cacheDir, itemId)
         val jsonFile = File(itemCacheDir, "info.json")
         val result: ItemFileInfo? =
