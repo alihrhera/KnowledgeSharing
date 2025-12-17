@@ -14,6 +14,13 @@ A professional Android application demonstrating reliable background file upload
     *   **Cancel**: Stop and clean up uploads.
 *   **Clean Architecture**: Built with separation of concerns, making the code testable and maintainable.
 
+## Screenshot
+<p>
+      <img src="res/1.png" alt="Shimmer Effect" width="200"/>
+      <img src="res/2.png" alt="Shimmer Effect" width="200"/>
+      <img src="res/3.png" alt="Shimmer Effect" width="200"/>
+</p>
+
 ## 🛠 Tech Stack
 
 *   **Language**: [Kotlin](https://kotlinlang.org/)

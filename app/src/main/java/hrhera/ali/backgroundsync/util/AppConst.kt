@@ -4,7 +4,7 @@ const val UPLOAD_COOLDOWN = 1*1000L // ms
 const val FILE_PATH_KEY = "SELECTED_FILE_PATH"
 const val ITEM_ID_KEY = "ITEM_ID"
 
-const val CHUNK_SIZE_IN_MB=10
+const val CHUNK_SIZE_IN_MB=1
 
 const val UPLOADING_CHANNEL_ID="UPLOADING_CHANNEL_ID"
 
