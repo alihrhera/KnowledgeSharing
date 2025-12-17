@@ -57,8 +57,8 @@ class UploadWorkerViewModel @Inject constructor(
                     if (it.state.isFinished) {
                         _progress.value = 100f
                     } else {
-                        val prog = it.progress.getInt(PROGRESS_KEY, 0)
-                        _progress.value = prog.toFloat()
+                        val prog = it.progress.getFloat(PROGRESS_KEY, 0f)
+                        _progress.value = prog
                     }
                 }
             }
@@ -66,3 +66,4 @@ class UploadWorkerViewModel @Inject constructor(
 
 
 }
+
