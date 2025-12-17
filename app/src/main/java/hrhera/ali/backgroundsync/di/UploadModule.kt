@@ -4,10 +4,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import hrhera.ali.backgroundsync.data.UploadWorkerDependenciesFactoryImpl
 import hrhera.ali.backgroundsync.data.inmemory.InMemoryUploadStateController
 import hrhera.ali.backgroundsync.data.repo.UploadRepositoryImpl
-import hrhera.ali.backgroundsync.domain.UploadWorkerDependenciesFactory
 import hrhera.ali.backgroundsync.domain.controller.UploadStateController
 import hrhera.ali.backgroundsync.domain.repo.UploadRepository
 import javax.inject.Singleton
@@ -27,12 +25,4 @@ abstract class UploadModule {
     abstract fun bindUploadRepo(
         impl: UploadRepositoryImpl
     ): UploadRepository
-
-
-
-    @Binds
-    @Singleton
-    abstract fun bindUploadWorkerDependenciesFactory(
-        impl: UploadWorkerDependenciesFactoryImpl
-    ): UploadWorkerDependenciesFactory
 }

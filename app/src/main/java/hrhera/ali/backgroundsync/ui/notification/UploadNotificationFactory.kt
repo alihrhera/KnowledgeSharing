@@ -18,22 +18,51 @@ object UploadNotificationFactory {
     fun create(
         context: Context,
         text: String,
-        itemId: String
+        itemId: String,
+        progress: Float,
+        isPaused: Boolean = false,
+        isCanceled: Boolean = false
     ): Notification {
-        val callUploadActionReceiver = Intent(context, UploadActionReceiver::class.java)
 
-        val pausePending = pendingIntent(context, ACTION_PAUSE, callUploadActionReceiver, itemId, 0)
-        val resumePending = pendingIntent(context, ACTION_RESUME, callUploadActionReceiver, itemId, 1)
-        val cancelPending = pendingIntent(context, ACTION_CANCEL, callUploadActionReceiver, itemId, 2)
-
-        return NotificationCompat.Builder(context, UPLOADING_CHANNEL_ID)
+        val notificationCompat = NotificationCompat.Builder(context, UPLOADING_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle("File Upload")
             .setContentText(text)
-            .setOngoing(true)
-            .addAction(R.drawable.ic_pause, "Pause", pausePending)
-            .addAction(R.drawable.ic_play, "Resume", resumePending)
-            .addAction(R.drawable.ic_cancel, "Cancel", cancelPending)
-            .build()
+            .setOngoing(progress < 100f)
+            .setProgress(100, progress.toInt(), false)
+
+        setupActions(
+            progress,
+            context,
+            itemId,
+            notificationCompat,
+            isPaused,
+            isCanceled
+        )
+
+        return notificationCompat.build()
+    }
+
+    private fun setupActions(
+        progress: Float,
+        context: Context,
+        itemId: String,
+        notificationCompat: NotificationCompat.Builder,
+        isPaused: Boolean,
+        isCanceled: Boolean,
+    ) {
+        if (!isCanceled && progress < 100f) {
+            val callUploadActionReceiver = Intent(context, UploadActionReceiver::class.java)
+            val pausePending = pendingIntent(context, ACTION_PAUSE, callUploadActionReceiver, itemId, 0)
+            val resumePending = pendingIntent(context, ACTION_RESUME, callUploadActionReceiver, itemId, 1)
+            val cancelPending = pendingIntent(context, ACTION_CANCEL, callUploadActionReceiver, itemId, 2)
+            if (isPaused) {
+                notificationCompat.addAction(R.drawable.ic_play, "Resume", resumePending)
+            } else {
+                notificationCompat.addAction(R.drawable.ic_pause, "Pause", pausePending)
+            }
+            notificationCompat.addAction(R.drawable.ic_cancel, "Cancel", cancelPending)
+        }
     }
 
     private fun pendingIntent(
@@ -43,7 +72,7 @@ object UploadNotificationFactory {
         itemId: String,
         requestCode: Int
     ): PendingIntent? {
-       return PendingIntent.getBroadcast(
+        return PendingIntent.getBroadcast(
             context, requestCode, callUploadActionReceiver.also {
                 it.action = actionValue
                 it.putExtra(ITEM_ID_KEY, itemId)

@@ -21,7 +21,7 @@ class FakeApi @Inject constructor() : UploadService {
 
     private fun getItemWithIndex(itemId: String): Pair<Int, Pair<String, Int>> {
         val i = list.indexOfFirst { it.first == itemId }
-        return Pair(i, if (i > -1) list[i] else Pair(itemId, 0))
+        return Pair(i, if (i > -1) list[i] else Pair(itemId, -1))
     }
 
     override suspend fun getLastUploadedItem(itemId: String): UploadResponse {

@@ -19,10 +19,9 @@ class UploadActionReceiver  :
         when (intent.action) {
             ACTION_PAUSE -> uploadStateController.pause(itemName)
             ACTION_RESUME ->uploadStateController.resume(itemName)
-            ACTION_CANCEL -> { uploadStateController.cancel(itemName)
-                WorkManager.getInstance(context)
-                    .cancelUniqueWork(itemName)
-            }
+            ACTION_CANCEL ->uploadStateController.cancel(itemName)
+
+
         }
     }
 }

@@ -28,31 +28,53 @@ class UploadPartsUseCase @Inject constructor(
         lastUploadedPart: Int,
         item: ItemFileInfo,
         progressReporter: UploadProgressReporter,
-
         ): UploadResult {
-        var lastUploadedPart1 = lastUploadedPart
-        while (lastUploadedPart1 < item.parts.size - 1) {
+        var lastUploadedPart = lastUploadedPart
+        while (lastUploadedPart < item.parts.size - 1) {
 
-            if (stateController.isCanceled(item.itemId))
+            if (stateController.isCanceled(item.itemId)){
+                progressReporter.report(
+                    calcProgress(lastUploadedPart, item),
+                    itemId = item.itemId,
+                    isCanceled = true,
+                    isPaused = false
+                )
                 return UploadResult.Canceled
+            }
 
-            if (stateController.isPaused(item.itemId))
+            if (stateController.isPaused(item.itemId)) {
+                progressReporter.report(
+                    calcProgress(lastUploadedPart, item),
+                    itemId = item.itemId,
+                    isCanceled = false,
+                    isPaused = stateController.isPaused(item.itemId)
+                )
                 return UploadResult.Retry
-
-            val nextPartIndex = lastUploadedPart1 + 1
+            }
+            val progress = calcProgress(lastUploadedPart, item)
+            progressReporter.report(
+                progress,
+                itemId = item.itemId,
+                isCanceled = false,
+                isPaused = stateController.isPaused(item.itemId)
+            )
+            val nextPartIndex = lastUploadedPart + 1
             val filePath = item.parts[nextPartIndex] ?: break
             try {
-                lastUploadedPart1 = repository.uploadPart(
+                lastUploadedPart = repository.uploadPart(
                     filePath = filePath,
                     itemId = item.itemId,
                     partIndex = nextPartIndex
                 )
-                val progress =
-                    calcProgress(lastUploadedPart1, item)
-                progressReporter.report(progress, itemId = item.itemId)
+                val progress = calcProgress(lastUploadedPart, item)
+                progressReporter.report(
+                    progress,
+                    itemId = item.itemId,
+                    isCanceled = false,
+                    isPaused = stateController.isPaused(item.itemId)
+                )
 
                 delay(UPLOAD_COOLDOWN)
-
             } catch (_: Exception) {
                 return UploadResult.Retry
             }

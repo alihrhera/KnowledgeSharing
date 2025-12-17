@@ -1,14 +1,13 @@
 package hrhera.ali.backgroundsync.ui.worker
 
 import android.content.Context
-import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import hrhera.ali.backgroundsync.data.UploadWorkerDependenciesFactoryImpl
+import hrhera.ali.backgroundsync.domain.WorkerProgressReporterFactory
 import hrhera.ali.backgroundsync.domain.models.ItemFileInfo
 import hrhera.ali.backgroundsync.domain.models.UploadResult
 import hrhera.ali.backgroundsync.domain.usecases.UploadPartsUseCase
@@ -23,7 +22,8 @@ import hrhera.ali.backgroundsync.util.UPLOAD_NOTIFICATION_ID
 class UploadWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted params: WorkerParameters,
-    private val progressReporterFactory: UploadWorkerDependenciesFactoryImpl
+    private val useCase: UploadPartsUseCase,
+    private val progressReporterFactory: WorkerProgressReporterFactory
 ) : CoroutineWorker(context, params) {
 
     private val itemId = params.inputData.getString(ITEM_ID_KEY) ?: ""
@@ -38,26 +38,22 @@ class UploadWorker @AssistedInject constructor(
             itemId = itemId
         )
 
-   /* override suspend fun doWork(): Result {
-        val reporter = progressReporterFactory.createReporter(this)
+    override suspend fun doWork(): Result {
+        val reporter = progressReporterFactory.create(this)
         return when (useCase(item, reporter)) {
             UploadResult.Success -> Result.success()
             UploadResult.Retry -> Result.retry()
             UploadResult.Canceled -> Result.failure()
         }
-    }*/
-   override suspend fun doWork(): Result {
-       Log.w("TAG===========>", "doWork: start", )
-       return Result.success()
     }
-
     override suspend fun getForegroundInfo(): ForegroundInfo {
         return ForegroundInfo(
             UPLOAD_NOTIFICATION_ID,
             UploadNotificationFactory.create(
                 applicationContext,
                 "Uploading ${inputData.getString(ITEM_ID_KEY)}",
-                ITEM_ID_KEY
+                ITEM_ID_KEY,0f,
+                isPaused = false
             )
         )
     }
