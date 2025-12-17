@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BackGroundSync"
+rootProject.name = "KnowledgeSharing"
 include(":app")
  
