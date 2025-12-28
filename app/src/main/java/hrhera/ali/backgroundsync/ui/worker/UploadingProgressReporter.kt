@@ -9,12 +9,12 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import hrhera.ali.backgroundsync.ui.notification.UploadNotificationFactory
 import hrhera.ali.backgroundsync.util.UPLOAD_NOTIFICATION_ID
-import hrhera.ali.backgroundsync.domain.controller.UploadProgressReporter
+import hrhera.ali.backgroundsync.domain.controller.ProgressReporter
 import hrhera.ali.backgroundsync.util.PROGRESS_KEY
 
-class WorkerProgressReporter @AssistedInject constructor(
+class UploadingProgressReporter @AssistedInject constructor(
     @Assisted private val worker: CoroutineWorker
-) : UploadProgressReporter {
+) : ProgressReporter {
 
     override suspend fun report(progress: Int, itemId: String,
                                 isPaused: Boolean, isCanceled: Boolean) {

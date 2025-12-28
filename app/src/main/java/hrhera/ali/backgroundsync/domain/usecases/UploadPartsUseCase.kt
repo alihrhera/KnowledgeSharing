@@ -1,6 +1,6 @@
 package hrhera.ali.backgroundsync.domain.usecases
 
-import hrhera.ali.backgroundsync.domain.controller.UploadProgressReporter
+import hrhera.ali.backgroundsync.domain.controller.ProgressReporter
 import hrhera.ali.backgroundsync.domain.models.ItemFileInfo
 import hrhera.ali.backgroundsync.util.UPLOAD_COOLDOWN
 import hrhera.ali.backgroundsync.domain.repo.UploadRepository
@@ -17,7 +17,7 @@ class UploadPartsUseCase @Inject constructor(
 
     suspend operator fun invoke(
         item: ItemFileInfo,
-        progressReporter: UploadProgressReporter,
+        progressReporter: ProgressReporter,
     ): UploadResult {
 
         val lastUploadedPart = lastUploadedItemUseCase(item.itemId)
@@ -27,7 +27,7 @@ class UploadPartsUseCase @Inject constructor(
     private suspend fun execute(
         lastUploadedPart: Int,
         item: ItemFileInfo,
-        progressReporter: UploadProgressReporter,
+        progressReporter: ProgressReporter,
         ): UploadResult {
         var lastUploadedPart = lastUploadedPart
         while (lastUploadedPart < item.parts.size - 1) {

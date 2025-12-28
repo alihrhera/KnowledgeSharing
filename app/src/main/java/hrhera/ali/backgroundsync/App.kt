@@ -13,7 +13,9 @@ class App : Application(), Configuration.Provider {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
-
+    companion object{
+        lateinit var appCacheDir: String
+    }
     override val workManagerConfiguration: Configuration
         get() =  Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -22,6 +24,7 @@ class App : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        appCacheDir=cacheDir.absolutePath
     }
 
     private fun createNotificationChannel() {

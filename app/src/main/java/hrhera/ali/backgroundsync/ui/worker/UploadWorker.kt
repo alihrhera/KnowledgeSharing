@@ -39,7 +39,7 @@ class UploadWorker @AssistedInject constructor(
         )
 
     override suspend fun doWork(): Result {
-        val reporter = progressReporterFactory.create(this)
+        val reporter = progressReporterFactory.createUploadProgress(this)
         return when (useCase(item, reporter)) {
             UploadResult.Success -> Result.success()
             UploadResult.Retry -> Result.retry()

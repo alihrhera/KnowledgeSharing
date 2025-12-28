@@ -16,22 +16,83 @@ import hrhera.ali.backgroundsync.util.FileSeparatorUtil.createDummyFile
 import hrhera.ali.backgroundsync.util.ITEM_ID_KEY
 import hrhera.ali.backgroundsync.util.PROGRESS_KEY
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+
+data class ScreenState(
+    val progress: Float = 0f,
+    val opName: String = "",
+    val checkUpload: Boolean = false,
+    val size: String = ""
+)
+
+sealed class ScreenAction {
+    data class StartUpload(val itemId: String, val filePath: String = "") : ScreenAction()
+    data object CheckUpload : ScreenAction()
+    data object NoSelection : ScreenAction()
+
+}
 
 @HiltViewModel
 class UploadWorkerViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
-    private val _progress = MutableStateFlow(0f)
-    val progress: StateFlow<Float> = _progress
+    val screenState = MutableStateFlow(ScreenState())
     fun dummyFileWithSize(): File {
         return createDummyFile(context)
     }
 
-    fun startUpload(itemId: String, filePath: String = "") {
+    fun emitAction(action: ScreenAction) {
+        when (action) {
+            is ScreenAction.CheckUpload -> screenState.value = ScreenState(checkUpload = true)
+            is ScreenAction.StartUpload -> startComperes(
+                itemId = action.itemId,
+                filePath = action.filePath,
+            )
+
+            is ScreenAction.NoSelection -> screenState.value = ScreenState(checkUpload = false)
+        }
+    }
+
+    private fun startComperes(itemId: String, filePath: String = "") {
+        screenState.value = ScreenState(progress = 0f, opName = "Compressing")
+        val request = OneTimeWorkRequestBuilder<CompressWorker>()
+            .setInputData(
+                workDataOf(
+                    ITEM_ID_KEY to itemId,
+                    FILE_PATH_KEY to filePath
+                )
+            )
+            .build()
+
+        val workManager = WorkManager.getInstance(context)
+        workManager.enqueueUniqueWork(
+            "Compress_$itemId",
+            ExistingWorkPolicy.REPLACE,
+            request
+        )
+        workManager.getWorkInfoByIdLiveData(request.id)
+            .observeForever { workInfo ->
+                workInfo?.let {
+                    if (it.state.isFinished) {
+                        screenState.value = screenState.value.copy(progress = 100f)
+                        val itemId = it.outputData.getString(ITEM_ID_KEY)
+                        val filePath = it.outputData.getString(FILE_PATH_KEY)
+                        val size = it.outputData.getString("Size")?:""
+                        if (itemId.isNullOrBlank() || filePath.isNullOrBlank()) return@let
+                        startUpload(itemId, filePath,size)
+                    } else {
+                        val prog = it.progress.getInt(PROGRESS_KEY, 0)
+                        screenState.value = screenState.value.copy(progress = prog.toFloat())
+                    }
+                }
+            }
+    }
+
+    private fun startUpload(itemId: String, filePath: String = "", size: String) {
+        screenState.value = ScreenState(progress = 0f, opName = "Uploading", size = size)
+
         val request = OneTimeWorkRequestBuilder<UploadWorker>()
             .setInputData(
                 workDataOf(
@@ -54,7 +115,7 @@ class UploadWorkerViewModel @Inject constructor(
 
         val workManager = WorkManager.getInstance(context)
         workManager.enqueueUniqueWork(
-            itemId,
+            "Upload_$itemId",
             ExistingWorkPolicy.REPLACE,
             request
         )
@@ -62,10 +123,11 @@ class UploadWorkerViewModel @Inject constructor(
             .observeForever { workInfo ->
                 workInfo?.let {
                     if (it.state.isFinished) {
-                        _progress.value = 100f
+                        screenState.value = screenState.value.copy(progress = 100f)
+
                     } else {
                         val prog = it.progress.getInt(PROGRESS_KEY, 0)
-                        _progress.value = prog.toFloat()
+                        screenState.value = screenState.value.copy(progress = prog.toFloat())
                     }
                 }
             }

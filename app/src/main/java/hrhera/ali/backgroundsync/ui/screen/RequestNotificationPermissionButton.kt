@@ -25,38 +25,39 @@ fun RequestNotificationPermissionButton(
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        if (results.values.all { it }) {
             onPermissionGranted()
         } else {
             onPermissionDenied()
+            showDialog=true
         }
     }
 
-    Button(
-        onClick = {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                onPermissionGranted()
-                return@Button
-            }
-            when {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    onPermissionGranted()
-                }
 
-                else -> showDialog=true
-            }
+    Button(onClick = {
+        val permissions = mutableListOf<String>()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissions += Manifest.permission.POST_NOTIFICATIONS
         }
-    ) {
-        Text("Start Upload")
-    }
 
-    if(showDialog){
+        if (permissions.isNotEmpty()) {
+            launcher.launch(permissions.toTypedArray())
+        } else {
+            onPermissionGranted()
+        }
+    }) {
+        Text("Start compress and upload")
+    }
+    if (showDialog) {
         AlertDialog(
             onDismissRequest = {
                 showDialog = false
@@ -65,9 +66,15 @@ fun RequestNotificationPermissionButton(
             text = { Text("To inform you about upload progress") },
             confirmButton = {
                 TextButton(onClick = {
-                    permissionLauncher.launch(
-                        Manifest.permission.POST_NOTIFICATIONS
-                    )
+
+                    val perms = mutableListOf<String>()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        perms += Manifest.permission.READ_MEDIA_VIDEO
+                        perms += Manifest.permission.POST_NOTIFICATIONS
+                    } else {
+                        perms += Manifest.permission.READ_EXTERNAL_STORAGE
+                    }
+                    launcher.launch(perms.toTypedArray())
                     showDialog = false
 
                 }) {

@@ -1,6 +1,6 @@
 package hrhera.ali.backgroundsync.domain.controller
 
-interface UploadProgressReporter {
+interface ProgressReporter {
     suspend fun report(
         progress: Int,
         itemId: String,
