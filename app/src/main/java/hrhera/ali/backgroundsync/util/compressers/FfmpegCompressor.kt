@@ -12,6 +12,23 @@ import hrhera.ali.backgroundsync.App
 import java.io.File
 import javax.inject.Inject
 
+/*
+for better qlty and big file size
+*         val compressCommandLine = arrayOf(
+            "-y",
+            "-i", inFilePath,
+            "-c:v", "h264_mediacodec",
+            "-b:a", "1500k",
+            "-level", "3.0",
+            "-pix_fmt", "yuv420p",
+            "-crf", "23",
+            "-c:a", "aac",
+            "-b:a", "128k",
+            "-movflags", "+faststart",
+            oFilePath.absolutePath
+        )
+
+* */
 class FfmpegCompressor @Inject constructor(
     @ApplicationContext private val context: Context
 ) : MediaCompressor {
@@ -22,9 +39,14 @@ class FfmpegCompressor @Inject constructor(
         val compressCommandLine = arrayOf(
             "-y",
             "-i", inFilePath,
-            "-vcodec", "mpeg4",
-            "-crf", "28",
-            "-preset", "fast",
+            "-c:v", "mpeg4",
+            "-level", "3.0",
+            "-pix_fmt", "yuv420p",
+            "-crf", "20",
+            "-preset", "slow",
+            "-c:a", "aac",
+            "-b:a", "128k",
+            "-movflags", "+faststart",
             oFilePath.absolutePath
         )
 
@@ -97,10 +119,10 @@ class FfmpegCompressor @Inject constructor(
         FFmpegKitConfig.enableLogCallback { log ->
             parseProgress(log.message) { progress?.invoke(it) }
         }
-        val oldSize=inputFile.length() / 1024
+        val oldSize = inputFile.length() / 1024
         val session = FFmpegKit.execute(compressCommandLine)
         return if (ReturnCode.isSuccess(session.returnCode)) {
-            val newSize=outputFile.length() / 1024
+            val newSize = outputFile.length() / 1024
             if (inputFile.exists()) inputFile.delete()
             CompressStatus.Success(
                 outputFile.absolutePath, "old size=$oldSize kb  new size =$newSize KB"
