@@ -56,7 +56,8 @@ dependencies {
     implementation(libs.androidx.hilt.work)
     ksp(libs.hilt.compiler)
     ksp(libs.androidx.hilt.compiler)
-//    implementation(libs.ffmpeg.kit.full)
+
+    implementation(libs.lightcompressor)
     implementation(libs.ffmpeg.kit.x6kb)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.core)

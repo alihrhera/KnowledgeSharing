@@ -1,7 +1,6 @@
 package hrhera.ali.backgroundsync.ui.worker
 
 import android.content.Context
-import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
@@ -16,6 +15,9 @@ import hrhera.ali.backgroundsync.util.FILE_PATH_KEY
 import hrhera.ali.backgroundsync.util.ITEM_ID_KEY
 import hrhera.ali.backgroundsync.util.compressers.CompressStatus
 import hrhera.ali.backgroundsync.domain.MediaCompressorFactory
+import hrhera.ali.backgroundsync.util.COMPRESS_TYPE_KEY
+import hrhera.ali.backgroundsync.util.CompressType
+import hrhera.ali.backgroundsync.util.SIZE_KEY
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,6 +33,7 @@ class CompressWorker @AssistedInject constructor(
 
     private val itemId = params.inputData.getString(ITEM_ID_KEY) ?: ""
     private val filePath = params.inputData.getString(FILE_PATH_KEY) ?: ""
+    private val compressType=params.inputData.getString(COMPRESS_TYPE_KEY)?: CompressType.FFMPEG.name
     override suspend fun doWork(): Result = withContext(Dispatchers.Default) {
         try {
             val result = compressStatus()
@@ -39,7 +42,7 @@ class CompressWorker @AssistedInject constructor(
                     val data = workDataOf(
                         FILE_PATH_KEY to result.outPutFilePath,
                         ITEM_ID_KEY to itemId,
-                        "Size" to result.newSize
+                        SIZE_KEY to result.newSize
                     )
                     return@withContext Result.success(data)
                 }
@@ -54,7 +57,7 @@ class CompressWorker @AssistedInject constructor(
     }
 
     private suspend fun compressStatus(): CompressStatus? {
-        val compressor = mediaCompressorFactory.create(type = "FFMPEG")
+        val compressor = mediaCompressorFactory.create(type = compressType)
         val result = compressor?.compress(
             inputFilePath = filePath,
             itemId = itemId,

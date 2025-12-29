@@ -55,7 +55,6 @@ fun UploadScreen(innerPadding: PaddingValues, workerViewmodel: UploadWorkerViewM
                     .bodyMedium)
             }
         }
-
         VideoPicker(
             state,
             onVideoSelected = {

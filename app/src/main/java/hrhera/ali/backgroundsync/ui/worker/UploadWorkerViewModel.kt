@@ -11,12 +11,13 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import hrhera.ali.backgroundsync.util.COMPRESS_TYPE_KEY
+import hrhera.ali.backgroundsync.util.CompressType
 import hrhera.ali.backgroundsync.util.FILE_PATH_KEY
-import hrhera.ali.backgroundsync.util.FileSeparatorUtil.createDummyFile
 import hrhera.ali.backgroundsync.util.ITEM_ID_KEY
 import hrhera.ali.backgroundsync.util.PROGRESS_KEY
+import hrhera.ali.backgroundsync.util.SIZE_KEY
 import kotlinx.coroutines.flow.MutableStateFlow
-import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -39,10 +40,6 @@ class UploadWorkerViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
     val screenState = MutableStateFlow(ScreenState())
-    fun dummyFileWithSize(): File {
-        return createDummyFile(context)
-    }
-
     fun emitAction(action: ScreenAction) {
         when (action) {
             is ScreenAction.CheckUpload -> screenState.value = ScreenState(checkUpload = true)
@@ -61,7 +58,8 @@ class UploadWorkerViewModel @Inject constructor(
             .setInputData(
                 workDataOf(
                     ITEM_ID_KEY to itemId,
-                    FILE_PATH_KEY to filePath
+                    FILE_PATH_KEY to filePath,
+                    COMPRESS_TYPE_KEY to CompressType.VideoCompressor.name
                 )
             )
             .build()
@@ -79,9 +77,9 @@ class UploadWorkerViewModel @Inject constructor(
                         screenState.value = screenState.value.copy(progress = 100f)
                         val itemId = it.outputData.getString(ITEM_ID_KEY)
                         val filePath = it.outputData.getString(FILE_PATH_KEY)
-                        val size = it.outputData.getString("Size")?:""
+                        val size = it.outputData.getString(SIZE_KEY) ?: ""
                         if (itemId.isNullOrBlank() || filePath.isNullOrBlank()) return@let
-                        startUpload(itemId, filePath,size)
+                        startUpload(itemId, filePath, size)
                     } else {
                         val prog = it.progress.getInt(PROGRESS_KEY, 0)
                         screenState.value = screenState.value.copy(progress = prog.toFloat())
@@ -97,7 +95,7 @@ class UploadWorkerViewModel @Inject constructor(
             .setInputData(
                 workDataOf(
                     ITEM_ID_KEY to itemId,
-                    FILE_PATH_KEY to filePath
+                    FILE_PATH_KEY to filePath,
                 )
             )
             .setBackoffCriteria(
